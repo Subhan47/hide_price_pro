@@ -23,7 +23,7 @@ class RuleController extends Controller
      */
     public function index()
     {
-        $rules = Rule::with('variants')->get();
+        $rules = Rule::with('variants')->orderByDesc('id')->get();
         $shop = Auth::user()->api()->rest('GET', 'admin/api/2023-10/products.json');
         $products = $shop['body']['products'];
 
@@ -165,7 +165,7 @@ class RuleController extends Controller
 
     public function search(Request $request)
     {
-        $rules = Rule::getBySearch($request['search'])->with('variants')->get();
+        $rules = Rule::getBySearch($request['search'])->with('variants')->orderByDesc('id')->get();
         $shop = Auth::user()->api()->rest('GET', 'admin/api/2023-10/products.json');
         $products = $shop['body']['products'];
         $rules = $this->paginate($rules, 2);

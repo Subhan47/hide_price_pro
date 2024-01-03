@@ -28,15 +28,16 @@
                         </li>
                     </ul>
                 </div>
-                <form>
-                    @csrf
+
+                    {!! Form::open(['route' => 'store-rule']) !!}
+
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="title">Rule Title</label>
+                                {!! Form::label('title', 'Rule Title') !!}
                             </div>
                             <div class="columns nine">
-                                <input type="text" id="title" name="title" required>
+                                {!! Form::text('title', null, ['id' => 'title', 'required' => 'required']) !!}
                             </div>
                         </div>
                     </div>
@@ -45,10 +46,10 @@
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="description">Rule Description (optional)</label>
+                                {!! Form::label('description', 'Rule Description (optional)') !!}
                             </div>
                             <div class="columns nine">
-                                <textarea id="description" name="description" placeholder="This Rule ..."></textarea>
+                                {!! Form::textarea('description', null, ['id' => 'description', 'placeholder' => 'This Rule ...','rows' => 3,]) !!}
                             </div>
                         </div>
                     </div>
@@ -56,7 +57,7 @@
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="variant_id">Select Variable Products Variants</label>
+                                {!! Form::label('variant_id', 'Select Variable Products Variants') !!}
                             </div>
                             <div class="columns nine">
                                 <select class="multipleSelect" id="variant_id" name="variant_id[]" multiple required style="">
@@ -82,19 +83,19 @@
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="is_enabled">Enable Hide Price Rule On Selected Product(s)</label>
+                                {!! Form::label('is_enabled', 'Enable Hide Price Rule On Selected Product(s)') !!}
                             </div>
                             <div class="columns nine">
-                                <input type="checkbox" id="is_enabled" name="is_enabled" checked="checked">
+                                {!! Form::checkbox('is_enabled', 1, true, ['id' => 'is_enabled']) !!}
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end">
-                        <button class="">Save</button>
+                        <button class="" type="submit">Save</button>
                     </div>
 
-                </form>
+                {!! Form::close() !!}
             </div>
         </section>
 
@@ -107,6 +108,7 @@
                 theme: "classic",
                 // dropdownCssClass: "custom-select2-dropdown"
             });
+
 
             $('form').on('submit', function(e) {
                 e.preventDefault();

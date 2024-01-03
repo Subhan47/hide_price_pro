@@ -29,16 +29,14 @@
                         </li>
                     </ul>
                 </div>
-                <form>
-                    @csrf
-                    <input type="hidden" id="ruleID" value="{{ $rule['id'] }}">
+                {!! Form::open(['route' => ['update-rule', $rule['id']]]) !!}
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="title">Rule Title</label>
+                                {!! Form::label('title', 'Rule Title') !!}
                             </div>
                             <div class="columns nine">
-                                <input type="text" id="title" name="title" value="{{ $rule['title'] }}" required>
+                                {!! Form::text('title', $rule['title'], ['id' => 'title', 'required' => 'required']) !!}
                             </div>
                         </div>
                     </div>
@@ -47,10 +45,10 @@
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="description">Rule Description (optional)</label>
+                                {!! Form::label('description', 'Rule Description (optional)') !!}
                             </div>
                             <div class="columns nine">
-                                <textarea id="description" name="description" placeholder="This Rule ...">{{ @$rule['description'] }}</textarea>
+                                {!! Form::textarea('description', @$rule['description'], ['id' => 'description', 'placeholder' => 'This Rule ...','rows' => 3,]) !!}
                             </div>
                         </div>
                     </div>
@@ -85,19 +83,19 @@
                     <div class="row py-2">
                         <div class="input-group">
                             <div class="columns three">
-                                <label for="is_enabled">Enable Hide Price Rule On Selected Product(s)</label>
+                                {!! Form::label('is_enabled', 'Enable Hide Price Rule On Selected Product(s)') !!}
                             </div>
                             <div class="columns nine">
-                                <input type="checkbox" id="is_enabled" name="is_enabled" {{ $rule['is_checked'] ? 'checked' : '' }}>
+                                {!! Form::checkbox('is_enabled', 1, $rule['is_checked'] ? true : false, ['id' => 'is_enabled']) !!}
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end">
-                        <button class="">Save</button>
+                        <button type="submit" class="">Update</button>
                     </div>
 
-                </form>
+                {!! Form::close() !!}
             </div>
         </section>
 
@@ -113,7 +111,6 @@
                 // dropdownCssClass: "custom-select2-dropdown"
             });
 
-            var id = $('#ruleID').val();
             $('form').on('submit', function(e) {
                 e.preventDefault();
                 $('#variant_id option:disabled').prop('disabled', false);

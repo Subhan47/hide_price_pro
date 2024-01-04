@@ -113,7 +113,7 @@
                                                     {!! Form::label('is_enabled', 'Enable Hide Price Rule On Selected Product(s)') !!}
                                                 </div>
                                                 <div class="columns ten">
-                                                    {!! Form::checkbox('is_enabled', 1, $rule['is_checked'] ? true : false, ['id' => 'is_enabled']) !!}
+                                                    {!! Form::checkbox('is_enabled', 1, $rule['is_enabled'] ? true : false, ['id' => 'is_enabled']) !!}
                                                 </div>
                                             </div>
                                         </div>

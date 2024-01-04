@@ -2,110 +2,142 @@
 
 @section('content')
 
-    <main class="container">
-        <span class="d-flex">
-             <a href="{{ URL::tokenRoute('home') }}" style="color: grey"><i class="icon-prev icon-style"></i> <strong>Rules</strong></a>
-        </span>
+    <section class="full-width">
+        <div id="main" class="full-width">
+            <section class="row"></section>
+            <div></div>
+            <section class="row"></section>
+            <article class="row" style="display: flex">
+                <a href="{{ URL::tokenRoute('home') }}" style="color: grey"><i
+                        class="icon-prev icon-style"></i> <strong>Rules</strong></a>
+            </article>
 
-        <div class="nav-buttons">
-            <strong>{{ strtoupper(config('shopify-app.app_name')) }}</strong>
-            <div class="">
-                <a href="#" class="">Get Support</a>
-                <a href="#" class="mx-2"><button class="secondary"><i class="icon-question icon-style"></i> <strong> User Guide</strong></button></a>
-                <a href="#"><button><i class="icon-gear icon-style"></i> <strong> General Setting</strong></button></a>
-            </div>
-        </div>
-
-        <div class="sessionMessages">
-        </div>
-
-        <section class="full-width table-section">
-            <div class="card listing-card">
-                <div class="row">
-                    <ul class="tabs">
-                        <li class="active">
-                            <a href="#"><i class="icon-post icon-style"></i> Rule</a>
-                        </li>
-                    </ul>
+            <article>
+                <div class="columns nine">
+                    <h5>{{ strtoupper(config('shopify-app.app_name')) }}</h5>
                 </div>
+                <div class="columns three align-right">
+                    <div class="">
+                        <a href="#" class="">Get Support</a> &nbsp;
+                        <a href="#" class="">
+                            <button class="secondary"><i class="icon-question icon-style"></i> <strong> User
+                                    Guide</strong></button>
+                        </a>
+                        <a href="#">
+                            <button><i class="icon-gear icon-style"></i> <strong> General Setting</strong></button>
+                        </a>
+                    </div>
+                </div>
+            </article>
 
-                    {!! Form::open(['route' => 'store-rule']) !!}
+            <article>
+                <div class="row full-width">
+                    <div class="columns twelve">
+                        <div class="sessionMessages"></div>
+                        <div class="row">
+                            <div class="columns twelve">
+                                <section class="full-width table-section">
+                                    <div class="card">
+                                        <div class="row">
+                                            <ul class="tabs">
+                                                <li class="active">
+                                                    <a href="#"><i class="icon-post icon-style"></i>
+                                                        Rule</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <article>
+                                            {!! Form::open(['route' => 'store-rule','class' => 'full-width']) !!}
+                                            <div class="row"></div>
+                                            <div class="row">
+                                                <div class="input-group">
+                                                    <div class="columns two">
+                                                        {!! Form::label('title', 'Rule Title') !!}
+                                                    </div>
+                                                    <div class="columns ten">
+                                                        {!! Form::text('title', null, ['id' => 'title', 'required' => 'required', 'placeholder' => 'Enter Rule Title']) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                    <div class="row py-2">
-                        <div class="input-group">
-                            <div class="columns three">
-                                {!! Form::label('title', 'Rule Title') !!}
-                            </div>
-                            <div class="columns nine">
-                                {!! Form::text('title', null, ['id' => 'title', 'required' => 'required']) !!}
+                                            <div class="row"></div>
+                                            <div class="row ">
+                                                <div class="input-group">
+                                                    <div class="columns two">
+                                                        {!! Form::label('description', 'Rule Description (optional)') !!}
+                                                    </div>
+                                                    <div class="columns ten">
+                                                        {!! Form::textarea('description', null, ['id' => 'description', 'placeholder' => 'This Rule ...','rows' => 3,]) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row"></div>
+                                            <div class="row ">
+                                                <div class="input-group">
+                                                    <div class="columns two">
+                                                        {!! Form::label('variant_id', 'Select Variable Products Variants') !!}
+                                                    </div>
+                                                    <div class="columns ten">
+                                                        <select class="multipleSelect" id="variant_id"
+                                                                name="variant_id[]" multiple required style="">
+                                                            @foreach ($products as $product)
+                                                                @php
+                                                                    $variableProduct = false;
+                                                                @endphp
+                                                                @foreach ($product['variants'] as $variant)
+                                                                    @if($variant['title'] !== 'Default Title')
+                                                                        @php
+                                                                            $disabled = in_array($variant['id'], $allRuleVariantIDs) ? 'disabled' : '';
+                                                                            if (!$variableProduct) {
+                                                                                echo '<optgroup label="' . @$product['title'] . '"></optgroup>';
+                                                                                $variableProduct = true;
+                                                                            }
+                                                                        @endphp
+                                                                        <option
+                                                                            value="{{ $variant['id'] }}" {{ $disabled }}>
+                                                                            {{ $product['title'] }}
+                                                                            - {{ $variant['title'] }} -
+                                                                            ${{ $variant['price'] }}
+                                                                            {{ $disabled ? '(Another Rule Applied)' : '' }}
+                                                                        </option>
+                                                                    @endif
+                                                                @endforeach
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row"></div>
+                                            <div class="row">
+                                                <div class="input-group">
+                                                    <div class="columns two">
+                                                        {!! Form::label('is_enabled', 'Enable Hide Price Rule On Selected Product(s)') !!}
+                                                    </div>
+                                                    <div class="columns ten">
+                                                        {!! Form::checkbox('is_enabled', 1, true, ['id' => 'is_enabled']) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-end">
+                                                <button class="" type="submit">Save</button>
+                                            </div>
+
+                                            {!! Form::close() !!}
+                                        </article>
+                                    </div>
+                                </section>
+
                             </div>
                         </div>
+
                     </div>
-
-
-                    <div class="row py-2">
-                        <div class="input-group">
-                            <div class="columns three">
-                                {!! Form::label('description', 'Rule Description (optional)') !!}
-                            </div>
-                            <div class="columns nine">
-                                {!! Form::textarea('description', null, ['id' => 'description', 'placeholder' => 'This Rule ...','rows' => 3,]) !!}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row py-2">
-                        <div class="input-group">
-                            <div class="columns three">
-                                {!! Form::label('variant_id', 'Select Variable Products Variants') !!}
-                            </div>
-                            <div class="columns nine">
-                                <select class="multipleSelect" id="variant_id" name="variant_id[]" multiple required style="">
-                                    @foreach ($products as $product)
-                                        @php
-                                            $variableProduct = false;
-                                        @endphp
-                                        @foreach ($product['variants'] as $variant)
-                                            @if($variant['title'] !== 'Default Title')
-                                                @php
-                                                    $disabled = in_array($variant['id'], $allRuleVariantIDs) ? 'disabled' : '';
-                                                    if (!$variableProduct) {
-                                                        echo '<optgroup label="' . @$product['title'] . '"></optgroup>';
-                                                        $variableProduct = true;
-                                                    }
-                                                @endphp
-                                                <option value="{{ $variant['id'] }}" {{ $disabled }}>
-                                                    {{ $product['title'] }} - {{ $variant['title'] }} - ${{ $variant['price'] }}
-                                                    {{ $disabled ? '(Another Rule Applied)' : '' }}
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row py-2">
-                        <div class="input-group">
-                            <div class="columns three">
-                                {!! Form::label('is_enabled', 'Enable Hide Price Rule On Selected Product(s)') !!}
-                            </div>
-                            <div class="columns nine">
-                                {!! Form::checkbox('is_enabled', 1, true, ['id' => 'is_enabled']) !!}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button class="" type="submit">Save</button>
-                    </div>
-
-                {!! Form::close() !!}
-            </div>
-        </section>
-
-    </main>
+                </div>
+            </article>
+        </div>
+    </section>
 
 
     <script>

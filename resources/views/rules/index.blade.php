@@ -1,27 +1,48 @@
 @extends('shopify-app::layouts.default')
 
 @section('content')
-    <main class="container" id="main">
-        <div class="navigationTop">
-            <strong>{{ strtoupper(config('shopify-app.app_name')) }}</strong>
-            <a href="{{ URL::tokenRoute('create-rule') }}" class="button align-right">Add Rule</a>
-        </div>
+    <section class="full-width">
+        <div id="main" class="full-width">
+            <section class="row"></section><div></div><section class="row"></section>
 
-        <section class="full-width table-section">
-            <div class="card listing-card">
-
-                <div class="sessionMessages"></div>
-
-                <label>
-                    <input type="search" placeholder="Search ID, Rule Title, Status" id="search"/>
-                </label>
-                <div id="rulesPage">
-                    @include('partials.rules')
+            <article>
+                <div class="columns ten">
+                    <h5>{{ strtoupper(config('shopify-app.app_name')) }}</h5>
                 </div>
-            </div>
-        </section>
+                <div class="columns two align-right">
+                    <a href="{{ URL::tokenRoute('create-rule') }}" class="button">Add Rule</a>
+                </div>
 
-    </main>
+            </article>
+
+            <section class="row"></section><div></div><section class="row"></section>
+
+            <article>
+                <div class="row full-width">
+                    <div class="columns twelve">
+                        <div class="card has-sections">
+                            <div class="card-section">
+                                <div class="card-section">
+                                    <div class="sessionMessages"></div>
+                                    <div class="row">
+                                        <div class="columns twelve">
+                                            <div class="">
+                                                <input type="search" placeholder="Search ID, Rule Title, Status" id="search"/>
+                                            </div>
+                                            <div class="row"></div> <div class="row"></div>
+                                            <div id="rulesPage">
+                                                @include('partials.rules')
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
     @include('partials.deleteConfirmationModal')
 
 <script>

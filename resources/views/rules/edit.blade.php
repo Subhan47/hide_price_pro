@@ -60,20 +60,26 @@
                             </div>
                             <div class="columns nine">
                                 <select class="multipleSelect" id="variant_id" name="variant_id[]" multiple required style="">
-                                    <option>Select Variants</option>
                                     @foreach ($products as $product)
-                                        <optgroup label="{{ @$product['title'] }}">
+                                        @php
+                                            $variableProduct = false;
+                                        @endphp
                                             @foreach ($product['variants'] as $variant)
-                                                @php
-                                                    $isSelected = in_array($variant->id, $ruleVariantIDs) ? 'selected' : '';
-                                                    $disabled = in_array($variant->id, $allRuleVariantIDs) ? 'disabled' : '';
-                                                @endphp
-                                                <option value="{{ $variant['id'] }}" {{ $disabled }} {{ $isSelected }}>
-                                                    {{ $variant['title'] }} - ${{ $variant['price'] }}
-                                                    {{ $disabled ? '(Another Rule Applied)' : '' }}
-                                                </option>
+                                                @if($variant['title'] !== 'Default Title')
+                                                    @php
+                                                        $isSelected = in_array($variant->id, $ruleVariantIDs) ? 'selected' : '';
+                                                        $disabled = in_array($variant->id, $allRuleVariantIDs) ? 'disabled' : '';
+                                                        if (!$variableProduct) {
+                                                            echo '<optgroup label="' . @$product['title'] . '"></optgroup>';
+                                                            $variableProduct = true;
+                                                        }
+                                                    @endphp
+                                                    <option value="{{ $variant['id'] }}" {{ $disabled }} {{ $isSelected }}>
+                                                        {{ $product['title'] }} - {{ $variant['title'] }} - ${{ $variant['price'] }}
+                                                        {{ $disabled ? '(Another Rule Applied)' : '' }}
+                                                    </option>
+                                                @endif
                                             @endforeach
-                                        </optgroup>
                                     @endforeach
                                 </select>
                             </div>
@@ -105,10 +111,6 @@
     <script>
         $(document).ready(function() {
             $(".multipleSelect").select2({
-                // theme: "classic",
-                theme: "flat",
-
-                // dropdownCssClass: "custom-select2-dropdown"
             });
 
             $('form').on('submit', function(e) {

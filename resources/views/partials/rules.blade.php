@@ -20,7 +20,8 @@
                     @foreach ($products as $product)
                         @foreach ($product['variants'] as $variant)
                             @if ($ruleVariant->variant_id == $variant['id'])
-                                {{ $product['title'] }}'s - {{ $variant['title'] }}<br>
+                                {{ $product['title'] }}'s - {{ $variant['title'] }} - ${{ $variant['price'] }}<br>
+
                             @endif
                         @endforeach
                     @endforeach

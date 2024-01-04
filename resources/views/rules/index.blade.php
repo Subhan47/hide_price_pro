@@ -22,6 +22,7 @@
         </section>
 
     </main>
+    @include('partials.deleteConfirmationModal')
 
 <script>
 
@@ -63,7 +64,8 @@
 
     // Delete the Rule
     function deleteRule(ruleId) {
-        if (confirm('Are you sure you want to delete this Rule?')) {
+        $('#deleteConfirmationModal').css('display', 'block');
+        $('#confirmDeleteBtn').on('click', function () {
             $.ajax({
                 url: '/delete-rule/' + ruleId,
                 type: 'POST',
@@ -94,7 +96,8 @@
                     $('.sessionMessages').html(errorHtml);
                 }
             });
-        }
+            $('#deleteConfirmationModal').css('display', 'none');
+        });
     }
 
     // Search Logic
@@ -128,6 +131,11 @@
             }
         });
     }
+
+    $(document).on('click', '.close', function () {
+        $('#deleteConfirmationModal').css('display', 'none');
+    });
+
 </script>
 
 @endsection

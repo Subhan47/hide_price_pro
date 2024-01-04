@@ -58,7 +58,8 @@ class RuleController extends Controller
     {
         $validator = $this->validateRuleStoreRequest($request);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->all()], 400);
+            $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+            return response()->json(['errors' => $validator->errors()->all(), 'disabledOptions' => $allRuleVariantIDs], 400);
         }
 
         $rule = $request->except(['_token', 'variant_id']);
@@ -72,13 +73,15 @@ class RuleController extends Controller
                     'variant_id' => $variantId,
                 ]);
             }
+            $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
         }
         catch (\Exception $e){
-            return response()->json(['errors' => $e->getMessage()], 400);
+            $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+            return response()->json(['errors' => $e->getMessage(), 'disabledOptions' => $allRuleVariantIDs], 400);
         }
 
 
-        return response()->json(['success' => 'Rule Created Successfully'], 200);
+        return response()->json(['success' => 'Rule Created Successfully', 'disabledOptions' => $allRuleVariantIDs], 200);
 
     }
 

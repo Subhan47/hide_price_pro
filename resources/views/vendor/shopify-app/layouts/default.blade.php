@@ -6,12 +6,14 @@
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <title>{{ config('shopify-app.app_name') }}</title>
 
-        <link rel="stylesheet" href="{{ asset('uptown.css') }}">
-        <link rel="stylesheet" href="{{ asset('style.css') }}">
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ asset('css/uptown.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/select2.min.css') }}">
+{{--        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />--}}
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="{{ asset('js/select2.min.js') }}"></script>
+{{--        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>--}}
         @yield('styles')
 
 @if(\Osiset\ShopifyApp\Util::getShopifyConfig('appbridge_enabled'))

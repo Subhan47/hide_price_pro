@@ -74,13 +74,6 @@
     padding: 5px 6px;
 }
 
-/*.custom-select2-dropdown {*/
-/*    width: 200px !important;*/
-/*    max-height: 200px !important;*/
-/*    overflow-y: auto;*/
-/*}*/
-
-
 .pagination {
     display: flex;
     justify-content: center;
@@ -104,6 +97,28 @@
 
 .pagination a:hover {
     background-color: #f2f2f2;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
 }
 
 @media screen and (max-width: 768px) {

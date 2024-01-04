@@ -61,19 +61,25 @@
                             </div>
                             <div class="columns nine">
                                 <select class="multipleSelect" id="variant_id" name="variant_id[]" multiple required style="">
-                                    <option>Select Variants</option>
                                     @foreach ($products as $product)
-                                        <optgroup label="{{ @$product['title'] }}">
-                                            @foreach ($product['variants'] as $variant)
+                                        @php
+                                            $variableProduct = false;
+                                        @endphp
+                                        @foreach ($product['variants'] as $variant)
+                                            @if($variant['title'] !== 'Default Title')
                                                 @php
-                                                    $disabled = in_array($variant->id, $allRuleVariantIDs) ? 'disabled' : '';
+                                                    $disabled = in_array($variant['id'], $allRuleVariantIDs) ? 'disabled' : '';
+                                                    if (!$variableProduct) {
+                                                        echo '<optgroup label="' . @$product['title'] . '"></optgroup>';
+                                                        $variableProduct = true;
+                                                    }
                                                 @endphp
                                                 <option value="{{ $variant['id'] }}" {{ $disabled }}>
-                                                    {{ $variant['title'] }} - ${{ $variant['price'] }}
+                                                    {{ $product['title'] }} - {{ $variant['title'] }} - ${{ $variant['price'] }}
                                                     {{ $disabled ? '(Another Rule Applied)' : '' }}
                                                 </option>
-                                            @endforeach
-                                        </optgroup>
+                                            @endif
+                                        @endforeach
                                     @endforeach
                                 </select>
                             </div>
@@ -105,8 +111,6 @@
     <script>
         $(document).ready(function() {
             $(".multipleSelect").select2({
-                theme: "classic",
-                // dropdownCssClass: "custom-select2-dropdown"
             });
 
 
@@ -121,18 +125,31 @@
                     success: function(response) {
                         if (response.success) {
                             $('form')[0].reset();
+                            var disabledOptions = response.disabledOptions;
+                            disabledOptions.forEach(function(disabledId) {
+                                $('#variant_id option[value="' + disabledId + '"]').prop('disabled', true);
+                            });
+                            $('#variant_id').val(null).trigger('change');
                             var successMessage = '<div class="alert success"><a class="close" href=""></a><dl><dt>' + response.success + '</dt></dl></div>';
                             $('.sessionMessages').html(successMessage);
                         }
                     },
                     error: function(xhr) {
+                        var disabledOptions = xhr.responseJSON.disabledOptions;
+                        if (Array.isArray(disabledOptions) && disabledOptions.length > 0) {
+                            disabledOptions.forEach(function(disabledId) {
+                                $('#variant_id option[value="' + disabledId + '"]').prop('disabled', true);
+                            });
+                            $('#variant_id').trigger('change');
+                        } else {
+                            console.error('Disabled options not provided or not in the expected format.');
+                        }
                         var errorList = [];
                         if (xhr.responseJSON && Array.isArray(xhr.responseJSON.errors)) {
                             errorList = xhr.responseJSON.errors;
                         } else if (xhr.responseJSON && typeof xhr.responseJSON.errors === 'string') {
                             errorList.push(xhr.responseJSON.errors);
                         } else {
-                            console.error(xhr.responseText); // Log the full response for debugging
                             errorList.push('An unknown error occurred.');
                         }
 

@@ -175,4 +175,24 @@ class RuleController extends Controller
 
         return view('partials.rules', compact('rules', 'products'));
     }
+
+
+    /**
+     * Purpose of this method is to check whether the variant_id exists in DB or Not
+     * If exists check whether its rule is enabled or not
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function findVariantInDB(Request $request): JsonResponse
+    {
+        $variantId = $request->input('variant_id');
+        $ruleVariant = RulesVariants::withEnabledRule($variantId)->first();
+        if(@$ruleVariant){
+            $isEnabled = (bool)$ruleVariant->rule;
+            return response()->json(['success' => 'Variant is Associated with any Rule',
+                'exists_enabled' => $isEnabled]);
+        }
+        return response()->json(['success' => 'Variant is not Associated with any Rule',
+                'exists_enabled' => null]);
+    }
 }

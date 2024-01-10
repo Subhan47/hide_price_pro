@@ -1,18 +1,28 @@
 {
+    "name": "hidePricePro-app",
     "private": true,
+    "license": "UNLICENSED",
     "scripts": {
-        "dev": "npm run development",
-        "development": "mix",
-        "watch": "mix watch",
-        "watch-poll": "mix watch -- --watch-options-poll=1000",
-        "hot": "mix watch --hot",
-        "prod": "npm run production",
-        "production": "mix --production"
+        "shopify": "shopify",
+        "build": "shopify app build",
+        "dev": "shopify app dev",
+        "info": "shopify app info",
+        "generate": "shopify app generate",
+        "deploy": "shopify app deploy"
     },
     "devDependencies": {
-        "axios": "^0.21",
+
+        "axios": "^1.6.4",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
         "postcss": "^8.1.14"
-    }
+    },
+    "dependencies": {
+        "semver": "^7.5.4",
+        "@shopify/app": "^3.49.2",
+        "@shopify/cli": "^3.49.2"
+    },
+    "workspaces": [
+        "extensions/*"
+    ]
 }

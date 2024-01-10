@@ -11,6 +11,7 @@ variantRadioButtons.forEach(radio => {
 
 
 async function getVariantID() {
+    $('#price-template--21887848022314__main').css('display', 'none');
     const variantID = await getVariantIDWithDelay();
     if (variantID) {
          checkVariantIDinDB(variantID);
@@ -42,11 +43,9 @@ function checkVariantIDinDB(variantID) {
         crossDomain: true,
         contentType: "json",
         success: function (response) {
-           if(response.exists_enabled != null && response.exists_enabled === true){
-               setTimeout(function() {
-                   $('.product__info-wrapper .price__container').css('display', 'none');
-               }, 400);
-           }
+            if (response.rule_exists_enabled === null){
+                $('#price-template--21887848022314__main').css('display', 'block');
+            }
         },
         error: function (error) {
             console.log('in error');

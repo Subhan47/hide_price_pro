@@ -187,12 +187,11 @@ class RuleController extends Controller
     {
         $variantId = $request->input('variant_id');
         $ruleVariant = RulesVariants::withEnabledRule($variantId)->first();
-        if(@$ruleVariant){
-            $isEnabled = (bool)$ruleVariant->rule;
+        if(@$ruleVariant && @$ruleVariant->rule){
             return response()->json(['success' => 'Variant is Associated with any Rule',
-                'exists_enabled' => $isEnabled]);
+                'rule_exists_enabled' => true]);
         }
         return response()->json(['success' => 'Variant is not Associated with any Rule',
-                'exists_enabled' => null]);
+                'rule_exists_enabled' => null]);
     }
 }

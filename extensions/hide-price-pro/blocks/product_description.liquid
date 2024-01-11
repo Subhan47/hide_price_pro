@@ -1,0 +1,18 @@
+{% if product.description %}
+    <span style="color:{{ block.settings.text_color }}; background:{{ block.settings.bg_color }}; border:{{ block.settings.border }}">
+        {{ product.description }}
+    </span>
+{% endif %}
+
+{% schema %}
+{
+   "name" : "Product Description",
+   "target" : "section",
+   "class" : "product_description",
+   "settings" : [
+      {"type" : "color", "id" : "text_color", "label" : "Description Color", "default" : "#ff0000"},
+      {"type" : "color", "id" : "bg_color", "label" : "Description Bg Color", "default" : "#ff0000"},
+      {"type" : "text", "id" : "border", "label" : "Description Border", "default" : "1px solid #ff0000"}
+   ]
+}
+{% endschema %}

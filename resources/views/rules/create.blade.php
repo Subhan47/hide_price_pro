@@ -72,6 +72,20 @@
                                                 </div>
                                             </div>
 
+
+                                            <div class="row"></div>
+                                            <div class="row ">
+                                                <div class="input-group">
+                                                    <div class="columns two">
+                                                        {!! Form::label('category', 'Select Category') !!}
+                                                    </div>
+                                                    <div class="columns ten">
+                                                        {!! Form::select('category', ['' => 'select any category' ,'products' => 'Products','variants' => 'Variants','collections' => 'Collections'], null, ['id' => 'category','class' => 'category','required' => 'required']) !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
                                             <div class="row"></div>
                                             <div class="row ">
                                                 <div class="input-group">
@@ -81,30 +95,34 @@
                                                     <div class="columns ten">
                                                         <select class="multipleSelect" id="variant_id"
                                                                 name="variant_id[]" multiple required style="">
-                                                            @foreach ($products as $product)
-                                                                @php
-                                                                    $variableProduct = false;
-                                                                @endphp
-                                                                @foreach ($product['variants'] as $variant)
-                                                                    @if($variant['title'] !== 'Default Title')
-                                                                        @php
-                                                                            $disabled = in_array($variant['id'], $allRuleVariantIDs) ? 'disabled' : '';
-                                                                            if (!$variableProduct) {
-                                                                                echo '<optgroup label="' . @$product['title'] . '"></optgroup>';
-                                                                                $variableProduct = true;
-                                                                            }
-                                                                        @endphp
-                                                                        <option
-                                                                            value="{{ $variant['id'] }}" {{ $disabled }}>
-                                                                            {{ $product['title'] }}
-                                                                            - {{ $variant['title'] }} -
-                                                                            ${{ $variant['price'] }}
-                                                                            {{ $disabled ? '(Another Rule Applied)' : '' }}
-                                                                        </option>
-                                                                    @endif
-                                                                @endforeach
-                                                            @endforeach
                                                         </select>
+
+{{--                                                        <select class="multipleSelect" id="variant_id"--}}
+{{--                                                                name="variant_id[]" multiple required style="">--}}
+{{--                                                            @foreach ($products as $product)--}}
+{{--                                                                @php--}}
+{{--                                                                    $variableProduct = false;--}}
+{{--                                                                @endphp--}}
+{{--                                                                @foreach ($product['variants'] as $variant)--}}
+{{--                                                                    @if($variant['title'] !== 'Default Title')--}}
+{{--                                                                        @php--}}
+{{--                                                                            $disabled = in_array($variant['id'], $allRuleVariantIDs) ? 'disabled' : '';--}}
+{{--                                                                            if (!$variableProduct) {--}}
+{{--                                                                                echo '<optgroup label="' . @$product['title'] . '"></optgroup>';--}}
+{{--                                                                                $variableProduct = true;--}}
+{{--                                                                            }--}}
+{{--                                                                        @endphp--}}
+{{--                                                                        <option--}}
+{{--                                                                            value="{{ $variant['id'] }}" {{ $disabled }}>--}}
+{{--                                                                            {{ $product['title'] }}--}}
+{{--                                                                            - {{ $variant['title'] }} ---}}
+{{--                                                                            ${{ $variant['price'] }}--}}
+{{--                                                                            {{ $disabled ? '(Another Rule Applied)' : '' }}--}}
+{{--                                                                        </option>--}}
+{{--                                                                    @endif--}}
+{{--                                                                @endforeach--}}
+{{--                                                            @endforeach--}}
+{{--                                                        </select>--}}
                                                     </div>
                                                 </div>
                                             </div>
@@ -145,6 +163,28 @@
             $(".multipleSelect").select2({
             });
 
+            $("select[name='category']").on("change", function (){
+                var category = $(this).val();
+                $.ajax({
+                    url: '{{ route('category-data') }}',
+                    method: 'GET',
+                    data : {'category' : category},
+                    success: function (response){
+                        var selectElement = $('#variant_id');
+                        selectElement.empty();
+                        $.each(response.data, function (index, option) {
+                            selectElement.append($('<option>', {
+                                value: option.id,
+                                text: option.title
+                            }));
+                        });
+                    },
+                    error: function (error){
+
+                    }
+                });
+            });
+
 
             $('form').on('submit', function(e) {
                 e.preventDefault();
@@ -157,25 +197,27 @@
                     success: function(response) {
                         if (response.success) {
                             $('form')[0].reset();
-                            var disabledOptions = response.disabledOptions;
-                            disabledOptions.forEach(function(disabledId) {
-                                $('#variant_id option[value="' + disabledId + '"]').prop('disabled', true);
-                            });
-                            $('#variant_id').val(null).trigger('change');
+                            // var disabledOptions = response.disabledOptions;
+                            // disabledOptions.forEach(function(disabledId) {
+                            //     $('#variant_id option[value="' + disabledId + '"]').prop('disabled', true);
+                            // });
+                           $('#variant_id').empty().val(null).trigger('change');
                             var successMessage = '<div class="alert success"><a class="close" href=""></a><dl><dt>' + response.success + '</dt></dl></div>';
                             $('.sessionMessages').html(successMessage);
                         }
                     },
                     error: function(xhr) {
-                        var disabledOptions = xhr.responseJSON.disabledOptions;
-                        if (Array.isArray(disabledOptions) && disabledOptions.length > 0) {
-                            disabledOptions.forEach(function(disabledId) {
-                                $('#variant_id option[value="' + disabledId + '"]').prop('disabled', true);
-                            });
-                            $('#variant_id').trigger('change');
-                        } else {
-                            console.error('Disabled options not provided or not in the expected format.');
-                        }
+                        // var disabledOptions = xhr.responseJSON.disabledOptions;
+                        // if (Array.isArray(disabledOptions) && disabledOptions.length > 0) {
+                        //     disabledOptions.forEach(function(disabledId) {
+                        //         $('#variant_id option[value="' + disabledId + '"]').prop('disabled', true);
+                        //     });
+                        //     $('#variant_id').trigger('change');
+                        // } else {
+                        //     console.error('Disabled options not provided or not in the expected format.');
+                        // }
+                        $('form')[0].reset();
+                        $('#variant_id').empty().val(null).trigger('change');
                         var errorList = [];
                         if (xhr.responseJSON && Array.isArray(xhr.responseJSON.errors)) {
                             errorList = xhr.responseJSON.errors;

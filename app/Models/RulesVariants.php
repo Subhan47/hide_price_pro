@@ -15,9 +15,9 @@ class RulesVariants extends Model
         return $this->belongsTo(Rule::class, 'rule_id');
     }
 
-    public function scopeWithEnabledRule($query, $variantId)
+    public function scopeWithEnabledRules($query, $variantIds)
     {
-        return $query->where('variant_id', $variantId)
+        return $query->whereIn('variant_id', $variantIds)
             ->with(['rule' => function ($query) {
                 $query->where('is_enabled', true);
             }]);

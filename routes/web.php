@@ -35,6 +35,8 @@ Route::middleware(['verify.shopify'])->group(function () {
     // Search Route, Search the Rules
     Route::get('/search', [RuleController::class, 'search'])->name('search');
 
+    // Get Category Data Route, Get the desired Data based on Category
+    Route::get('/category-data', [RuleController::class, 'categoryData'])->name('category-data');
 
 });
 

@@ -28,10 +28,6 @@ class RuleController extends Controller
         $products = $shop['body']['products'];
 
         $rules = $this->paginate($rules, 2);
-//        if(@request()->get('page')){
-//            return view('partials.rules', compact('rules', 'products'));
-//        }
-
         return view('rules.index', compact('rules', 'products'));
     }
 
@@ -48,18 +44,12 @@ class RuleController extends Controller
         return view('rules.create', compact('products','allRuleVariantIDs'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
+
     public function store(Request $request)
     {
         $validator = $this->validateRuleStoreRequest($request);
         if ($validator->fails()) {
-            $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
-            return response()->json(['errors' => $validator->errors()->all(), 'disabledOptions' => $allRuleVariantIDs], 400);
+            return response()->json(['errors' => $validator->errors()->all()], 400);
         }
 
         $rule = $request->except(['_token', 'variant_id']);
@@ -68,21 +58,106 @@ class RuleController extends Controller
         try{
             $rule = Rule::create($rule);
             foreach ($request['variant_id'] as $variantId) {
-                RulesVariants::create([
-                    'rule_id' => $rule->id,
-                    'variant_id' => $variantId,
-                ]);
+                $collection = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$variantId.json");
+                $product = Auth::user()->api()->rest('GET', "admin/api/2023-10/products/$variantId.json");
+
+                // It means $variantId is CollectionID
+                if (isset($collection['body']['collection'])) {
+                    RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId]);
+                    $collectionProducts = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$variantId/products.json");
+                    if (isset($collectionProducts['body']['products'])) {
+                        foreach($collectionProducts['body']['products'] as $collectionProduct){
+                            RulesVariants::updateOrCreate(
+                                ['variant_id' => $collectionProduct['id']],
+                                ['rule_id' => $rule->id, 'variant_id' => $collectionProduct['id']]
+                            );
+                            $productDetails = Auth::user()->api()->rest('GET', "admin/api/2023-10/products/$collectionProduct->id.json");
+                            foreach($productDetails['body']['product']['variants'] as $productVariant){
+                                if($productVariant['title'] !== 'Default Title'){
+                                    RulesVariants::updateOrCreate(
+                                        ['variant_id' => $productVariant['id']],
+                                        ['rule_id' => $rule->id, 'variant_id' => $productVariant['id']]
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // It means $variantId is ProductID
+                elseif (isset($product['body']['product'])) {
+                    RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId]);
+                    foreach($product['body']['product']['variants'] as $productVariant){
+                        if($productVariant['title'] !== 'Default Title'){
+                            RulesVariants::updateOrCreate(
+                                ['variant_id' => $productVariant['id']],
+                                ['rule_id' => $rule->id, 'variant_id' => $productVariant['id']]
+                            );
+                        }
+                    }
+                }
+
+                // It means $variantId is Actually VariantID
+                else{
+                    RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId,]);
+                }
             }
-            $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+            // Delete if any rule exists but not in RuleVariants table
+            Rule::doesntHave('variants')->delete();
         }
         catch (\Exception $e){
-            $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
-            return response()->json(['errors' => $e->getMessage(), 'disabledOptions' => $allRuleVariantIDs], 400);
+            return response()->json(['errors' => $e->getMessage()], 400);
+        }
+        return response()->json(['success' => 'Rule Created Successfully'], 200);
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function storeBackup(Request $request)
+    {
+        $validator = $this->validateRuleStoreRequest($request);
+        if ($validator->fails()) {
+           // $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+            return response()->json(['errors' => $validator->errors()->all()], 400);
         }
 
+        $rule = $request->except(['_token', 'variant_id']);
+        $rule['is_enabled'] = @$rule['is_enabled'] ? true : false;
 
-        return response()->json(['success' => 'Rule Created Successfully', 'disabledOptions' => $allRuleVariantIDs], 200);
+        try{
+            $rule = Rule::create($rule);
+            foreach ($request['variant_id'] as $variantId) {
+                $product = Auth::user()->api()->rest('GET', "admin/api/2023-10/products/$variantId.json");
+                // It means $variantId is ProductID
+                if (isset($product['body']['product'])) {
+                    foreach($product['body']['product']['variants'] as $productVariant){
+                        if ($existingRecord = RulesVariants::where('variant_id', $productVariant['id'])->first()) {
+                            Rule::where('id', $existingRecord['rule_id'])->delete();
+                        }
+                        RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $productVariant['id']]);
+                    }
+                }
+                // It means $variantId might be collectionID or VariantID
+                else{
+                    RulesVariants::create([
+                        'rule_id' => $rule->id,
+                        'variant_id' => $variantId,
+                    ]);
+                }
 
+            }
+            //$allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+        }
+        catch (\Exception $e){
+           //$allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+            return response()->json(['errors' => $e->getMessage()], 400);
+        }
+        return response()->json(['success' => 'Rule Created Successfully'], 200);
     }
 
     /**
@@ -185,13 +260,173 @@ class RuleController extends Controller
      */
     public function findVariantInDB(Request $request): JsonResponse
     {
-        $variantId = $request->input('variant_id');
-        $ruleVariant = RulesVariants::withEnabledRule($variantId)->first();
-        if(@$ruleVariant && @$ruleVariant->rule){
-            return response()->json(['success' => 'Variant is Associated with any Rule',
-                'rule_exists_enabled' => true]);
+        $variantIds = $request->input('variant_ids');
+        $ruleVariants = RulesVariants::withEnabledRules($variantIds)->get();
+        $result = [];
+        foreach ($variantIds as $variantId) {
+            $associatedRule = $ruleVariants->where('variant_id', $variantId)->first();
+            if (@$associatedRule && @$associatedRule->rule) {
+                $result[] = [
+                    'variant_id' => $variantId,
+                    'rule_exists_enabled' => true,
+                ];
+            }
+            else {
+                $result[] = [
+                    'variant_id' => $variantId,
+                    'rule_exists_enabled' => null,
+                ];
+            }
         }
-        return response()->json(['success' => 'Variant is not Associated with any Rule',
-                'rule_exists_enabled' => null]);
+        return response()->json($result);
     }
+
+
+    public function categoryData(Request $request): JsonResponse
+    {
+        $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+        $shop = Auth::user()->api()->rest('GET', 'admin/api/2023-10/products.json');
+        $products = $shop['body']['products'];
+        $products = collect($products)->reject(function ($product) use ($allRuleVariantIDs) {
+            return in_array($product['id'], $allRuleVariantIDs);
+        });
+
+        if($request['category'] == 'products'){
+            return response()->json(['data' => $products->values()->all()]);
+        }
+        elseif ($request['category'] == 'variants')
+        {
+            $productVariants = $products->flatMap(function ($product) {
+                return collect($product['variants'])
+                    ->reject(function ($variant) {
+                        return $variant['title'] === 'Default Title';
+                    })
+                    ->map(function ($variant) use ($product) {
+                        return [
+                            'id' => $variant['id'],
+                            'title' => @$product['title'] . ' - ' .  @$variant['title'] . ' - ' . @$variant['price']
+                        ];
+                    });
+            })
+                ->filter(function ($productVariant) use ($allRuleVariantIDs) {
+                    return !in_array($productVariant['id'], $allRuleVariantIDs);
+                });
+
+            return response()->json(['data' => $productVariants->values()->all()]);
+        }
+
+        else{
+            $shopCollects = Auth::user()->api()->rest('GET', 'admin/api/2023-10/collects.json');
+            $collects = $shopCollects['body']['collects'];
+            $collections = collect($collects)->unique('collection_id')->reject(function ($collect) use ($allRuleVariantIDs) {
+                return in_array($collect['collection_id'], $allRuleVariantIDs);
+            })->pluck('collection_id')->toArray();
+            $collectionsDetails = [];
+            foreach ($collections as $collection){
+                $collectionDetails = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$collection.json");
+                $collectionsDetails[] = [
+                    'id' => $collectionDetails['body']['collection']['id'],
+                    'title' => $collectionDetails['body']['collection']['title'],
+                ];
+            }
+            return response()->json(['data' => $collectionsDetails]);
+        }
+    }
+
+
+    public function categoryDataBackup(Request $request): JsonResponse
+    {
+        $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+        $shop = Auth::user()->api()->rest('GET', 'admin/api/2023-10/products.json');
+        $products = $shop['body']['products'];
+        $products = collect($products)->reject(function ($product) use ($allRuleVariantIDs) {
+            return in_array($product['id'], $allRuleVariantIDs);
+        });
+
+        if($request['category'] == 'products'){
+            return response()->json(['data' => $products->values()->all()]);
+        }
+        elseif ($request['category'] == 'variants')
+        {
+            $productVariants = $products->flatMap(function ($product) {
+                return collect($product['variants'])
+                    ->reject(function ($variant) {
+                        return $variant['title'] === 'Default Title';
+                    })
+                    ->map(function ($variant) use ($product) {
+                        return [
+                            'id' => $variant['id'],
+                            'title' => @$product['title'] . ' - ' .  @$variant['title'] . ' - ' . @$variant['price']
+                        ];
+                    });
+            })
+                ->filter(function ($productVariant) use ($allRuleVariantIDs) {
+                    return !in_array($productVariant['id'], $allRuleVariantIDs);
+                });
+
+            return response()->json(['data' => $productVariants->values()->all()]);
+        }
+
+        else{
+            return response()->json(['data' => 'Its collection']);
+        }
+    }
+    public function categoryDataBackup2(Request $request): JsonResponse
+    {
+        $allRuleVariantIDs = RulesVariants::pluck('variant_id')->toArray();
+
+        // Collection
+        $shopCollects = Auth::user()->api()->rest('GET', 'admin/api/2023-10/collects.json');
+        $collects = $shopCollects['body']['collects'];
+        $collections = collect($collects)->unique('collection_id')->reject(function ($collect) use ($allRuleVariantIDs) {
+            return in_array($collect['collection_id'], $allRuleVariantIDs);
+        })->pluck('collection_id')->toArray();
+        $collectionsDetails = [];
+        foreach ($collections as $collection){
+            $collectionDetails = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$collection.json");
+            $collectionsDetails[] = [
+                'id' => $collectionDetails['body']['collection']['id'],
+                'title' => $collectionDetails['body']['collection']['title'],
+            ];
+        }
+        // retrieving products of the collections
+        $products = [];
+        foreach ($collectionsDetails as $collection){
+            $collectionProducts = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/{$collection['id']}/products.json");
+            $products = $collectionProducts['body']['products'];
+            $products = collect($products)->reject(function ($product) use ($allRuleVariantIDs) {
+                return in_array($product['id'], $allRuleVariantIDs);
+            });
+            $products[] = $products->values()->all();
+        }
+
+        if($request['category'] == 'collections'){
+            return response()->json(['data' => $collectionsDetails]);
+        }
+        elseif($request['category'] == 'products'){
+            return response()->json(['data' => $products]);
+        }
+        else
+        {
+            // retrieving variants of the products
+            $products = collect($products);
+            $productVariants = $products->flatMap(function ($product) {
+                return collect($product['variants'])
+                    ->reject(function ($variant) {
+                        return $variant['title'] === 'Default Title';
+                    })
+                    ->map(function ($variant) use ($product) {
+                        return [
+                            'id' => $variant['id'],
+                            'title' => @$product['title'] . ' - ' .  @$variant['title'] . ' - ' . @$variant['price']
+                        ];
+                    });
+            })->filter(function ($productVariant) use ($allRuleVariantIDs) {
+                    return !in_array($productVariant['id'], $allRuleVariantIDs);
+            });
+
+            return response()->json(['data' => $productVariants->values()->all()]);
+        }
+    }
+
 }

@@ -24,11 +24,15 @@ class RuleController extends Controller
     public function index()
     {
         $rules = Rule::with('variants')->orderByDesc('id')->get();
+
+        $shop = Auth::user()->api()->rest('GET', '/admin/api/2023-10/custom_collections.json');
+        $collections = $shop['body']['custom_collections'];
+
         $shop = Auth::user()->api()->rest('GET', 'admin/api/2023-10/products.json');
         $products = $shop['body']['products'];
 
-        $rules = $this->paginate($rules, 2);
-        return view('rules.index', compact('rules', 'products'));
+        $rules = $this->paginate($rules, 10);
+        return view('rules.index', compact('rules','collections', 'products'));
     }
 
     /**
@@ -51,59 +55,13 @@ class RuleController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()->all()], 400);
         }
-
         $rule = $request->except(['_token', 'variant_id']);
         $rule['is_enabled'] = @$rule['is_enabled'] ? true : false;
-
         try{
             $rule = Rule::create($rule);
             foreach ($request['variant_id'] as $variantId) {
-                $collection = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$variantId.json");
-                $product = Auth::user()->api()->rest('GET', "admin/api/2023-10/products/$variantId.json");
-
-                // It means $variantId is CollectionID
-                if (isset($collection['body']['collection'])) {
-                    RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId]);
-                    $collectionProducts = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$variantId/products.json");
-                    if (isset($collectionProducts['body']['products'])) {
-                        foreach($collectionProducts['body']['products'] as $collectionProduct){
-                            RulesVariants::updateOrCreate(
-                                ['variant_id' => $collectionProduct['id']],
-                                ['rule_id' => $rule->id, 'variant_id' => $collectionProduct['id']]
-                            );
-                            $productDetails = Auth::user()->api()->rest('GET', "admin/api/2023-10/products/$collectionProduct->id.json");
-                            foreach($productDetails['body']['product']['variants'] as $productVariant){
-                                if($productVariant['title'] !== 'Default Title'){
-                                    RulesVariants::updateOrCreate(
-                                        ['variant_id' => $productVariant['id']],
-                                        ['rule_id' => $rule->id, 'variant_id' => $productVariant['id']]
-                                    );
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // It means $variantId is ProductID
-                elseif (isset($product['body']['product'])) {
-                    RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId]);
-                    foreach($product['body']['product']['variants'] as $productVariant){
-                        if($productVariant['title'] !== 'Default Title'){
-                            RulesVariants::updateOrCreate(
-                                ['variant_id' => $productVariant['id']],
-                                ['rule_id' => $rule->id, 'variant_id' => $productVariant['id']]
-                            );
-                        }
-                    }
-                }
-
-                // It means $variantId is Actually VariantID
-                else{
-                    RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId,]);
-                }
+                RulesVariants::create(['rule_id' => $rule->id, 'variant_id' => $variantId, 'rule_applied_to' => $request['category'] ]);
             }
-            // Delete if any rule exists but not in RuleVariants table
-            Rule::doesntHave('variants')->delete();
         }
         catch (\Exception $e){
             return response()->json(['errors' => $e->getMessage()], 400);
@@ -244,13 +202,14 @@ class RuleController extends Controller
     public function search(Request $request)
     {
         $rules = Rule::getBySearch($request['search'])->with('variants')->orderByDesc('id')->get();
+        $shop = Auth::user()->api()->rest('GET', '/admin/api/2023-10/custom_collections.json');
+        $collections = $shop['body']['custom_collections'];
         $shop = Auth::user()->api()->rest('GET', 'admin/api/2023-10/products.json');
         $products = $shop['body']['products'];
-        $rules = $this->paginate($rules, 2);
+        $rules = $this->paginate($rules, 10);
 
-        return view('partials.rules', compact('rules', 'products'));
+        return view('partials.rules', compact('rules','collections', 'products'));
     }
-
 
     /**
      * Purpose of this method is to check whether the variant_id exists in DB or Not
@@ -259,6 +218,26 @@ class RuleController extends Controller
      * @return JsonResponse
      */
     public function findVariantInDB(Request $request): JsonResponse
+    {
+        $variantId = $request->input('variant_id');
+        $ruleVariant = RulesVariants::withEnabledRule($variantId)->first();
+        if(@$ruleVariant && @$ruleVariant->rule){
+            return response()->json(['success' => 'Variant is Associated with any Rule',
+                'rule_exists_enabled' => true]);
+        }
+        return response()->json(['success' => 'Variant is not Associated with any Rule',
+            'rule_exists_enabled' => null]);
+    }
+
+
+
+    /**
+     * Purpose of this method is to check whether the variant_id exists in DB or Not
+     * If exists check whether its rule is enabled or not
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function findVariantInDB2(Request $request): JsonResponse
     {
         $variantIds = $request->input('variant_ids');
         $ruleVariants = RulesVariants::withEnabledRules($variantIds)->get();
@@ -316,20 +295,12 @@ class RuleController extends Controller
         }
 
         else{
-            $shopCollects = Auth::user()->api()->rest('GET', 'admin/api/2023-10/collects.json');
-            $collects = $shopCollects['body']['collects'];
-            $collections = collect($collects)->unique('collection_id')->reject(function ($collect) use ($allRuleVariantIDs) {
-                return in_array($collect['collection_id'], $allRuleVariantIDs);
-            })->pluck('collection_id')->toArray();
-            $collectionsDetails = [];
-            foreach ($collections as $collection){
-                $collectionDetails = Auth::user()->api()->rest('GET', "admin/api/2023-10/collections/$collection.json");
-                $collectionsDetails[] = [
-                    'id' => $collectionDetails['body']['collection']['id'],
-                    'title' => $collectionDetails['body']['collection']['title'],
-                ];
-            }
-            return response()->json(['data' => $collectionsDetails]);
+            $shop = Auth::user()->api()->rest('GET', '/admin/api/2023-10/custom_collections.json');
+            $collections = $shop['body']['custom_collections'];
+            $collections = collect($collections)->reject(function ($collection) use ($allRuleVariantIDs) {
+                return in_array($collection['id'], $allRuleVariantIDs);
+            });
+            return response()->json(['data' => $collections->values()->all()]);
         }
     }
 

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Rule extends Model
 {
     use HasFactory;
-    protected $fillable = ['id', 'title', 'description', 'is_enabled'];
+    protected $fillable = ['id', 'title', 'description','is_enabled'];
 
     public function variants()
     {

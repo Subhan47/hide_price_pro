@@ -3,14 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\RulesVariants;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RulesVariantsController extends Controller
 {
+
+    /**
+     * Retrieve all Rules Variants.
+     *
+     * @param $type
+     * @return JsonResponse
+     */
+    public function all($type)
+    {
+        $rulesVariants = RulesVariants::withEnabledRuleAndCategory($type)->get();
+        return response()->json($rulesVariants);
+    }
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
@@ -20,7 +35,7 @@ class RulesVariantsController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -31,7 +46,7 @@ class RulesVariantsController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -42,7 +57,7 @@ class RulesVariantsController extends Controller
      * Display the specified resource.
      *
      * @param  \App\Models\RulesVariants  $rulesVariants
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(RulesVariants $rulesVariants)
     {
@@ -53,7 +68,7 @@ class RulesVariantsController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\RulesVariants  $rulesVariants
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit(RulesVariants $rulesVariants)
     {
@@ -65,7 +80,7 @@ class RulesVariantsController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\RulesVariants  $rulesVariants
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, RulesVariants $rulesVariants)
     {
@@ -76,7 +91,7 @@ class RulesVariantsController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\RulesVariants  $rulesVariants
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(RulesVariants $rulesVariants)
     {

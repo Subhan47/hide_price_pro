@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\RuleController;
+use App\Http\Controllers\RulesVariantsController;
+use App\Models\RulesVariants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Find variant Route, Find whether variantID exists in DB
 Route::get('/find-variant',[RuleController::class, 'findVariantInDB'])->name('find-variant');
+
+// Retrieve RulesVariant Data Route, Get all the records of RulesVariants
+Route::get('/all-rulesVariants/{type}', [RulesVariantsController::class, 'all'])->name('all-rulesVariants');

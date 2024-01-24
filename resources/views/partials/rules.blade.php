@@ -4,7 +4,7 @@
         <th>ID</th>
         <th>Rule Title</th>
         <th>Description</th>
-        <th>Rule On Product's Variant(s)</th>
+        <th>Rule Applied: Collections | Products | Variants</th>
         <th>Status</th>
         <th>Action</th>
     </tr>
@@ -17,19 +17,29 @@
             <td>{{ @$rule['description']?: 'N/A' }}</td>
             <td>
                 @foreach ($rule->variants as $ruleVariant)
-                    @foreach ($products as $product)
-                        @foreach ($product['variants'] as $variant)
-                            @if ($ruleVariant->variant_id == $variant['id'])
-                                {{ $product['title'] }}'s - {{ $variant['title'] }} - ${{ $variant['price'] }}<br>
+                    @switch($ruleVariant->rule_applied_to)
+                        @case('collections')
+                            {{ collect($collections)->where('id', $ruleVariant->variant_id)->first()['title'] }}<br>
+                        @break
 
-                            @endif
-                        @endforeach
-                    @endforeach
+                        @case('products')
+                            {{ collect($products)->where('id', $ruleVariant->variant_id)->first()['title'] }}<br>
+                        @break
+
+                        @case('variants')
+                            @foreach ($products as $product)
+                                @foreach ($product['variants'] as $variant)
+                                    @if ($ruleVariant->variant_id == $variant['id'])
+                                        {{ $product['title'] }}'s - {{ $variant['title'] }} - ${{ $variant['price'] }}<br>
+                                    @endif
+                                @endforeach
+                            @endforeach
+                        @break
+                    @endswitch
                 @endforeach
             </td>
             <td><span class="tag {{ $rule['is_enabled'] == true ? 'green' : 'orange' }}">{{ $rule['is_enabled'] == true ? 'Enabled' : 'Disabled' }}</span></td>
             <td>
-{{--                <a href="{{ URL::tokenRoute('edit-rule', ['id' => $rule['id']]) }}">--}}
                 <button class="secondary icon-edit" onclick="editRule({{ $rule['id'] }})"></button>
                 <button class="secondary icon-trash" onclick="deleteRule({{ $rule['id'] }})"></button>
             </td>

@@ -19,11 +19,11 @@
                 @foreach ($rule->variants as $ruleVariant)
                     @switch($ruleVariant->rule_applied_to)
                         @case('collections')
-                            {{ collect($collections)->where('id', $ruleVariant->variant_id)->first()['title'] }}<br>
+                            {{ collect($collections)->where('id', $ruleVariant->variant_id)->first()['title']  ?? 'N/A' }}<br>
                         @break
 
                         @case('products')
-                            {{ collect($products)->where('id', $ruleVariant->variant_id)->first()['title'] }}<br>
+                            {{ collect($products)->where('id', $ruleVariant->variant_id)->first()['title']  ?? 'N/A' }}<br>
                         @break
 
                         @case('variants')

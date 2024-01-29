@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\RuleController;
 use App\Http\Controllers\RulesVariantsController;
+use App\Http\Controllers\WebhookController;
 use App\Models\RulesVariants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

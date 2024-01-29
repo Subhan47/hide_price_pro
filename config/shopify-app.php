@@ -343,7 +343,7 @@ return [
     'webhooks' => [
         [
             'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'APP_UNINSTALLED'),
-            'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://odd-clouds-exist.loca.lt/webhook/app-uninstalled')
+            'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://fluffy-lions-create.loca.lt/webhook/app-uninstalled')
         ],
         /*
             [

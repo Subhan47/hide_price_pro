@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::middleware(['verify.shopify'])->group(function () {
+Route::middleware(['verify.shopify', 'billable'])->group(function () {
     // Home Route, Listing of Rules
     Route::get('/',[RuleController::class, 'index'])->name('home');
 

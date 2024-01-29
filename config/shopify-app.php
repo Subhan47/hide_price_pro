@@ -343,7 +343,7 @@ return [
     'webhooks' => [
         [
             'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'APP_UNINSTALLED'),
-            'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://fluffy-lions-create.loca.lt/webhook/app-uninstalled')
+            'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://long-hands-suffer.loca.lt/webhook/app-uninstalled')
         ],
         /*
             [
@@ -386,16 +386,18 @@ return [
     */
 
     'after_authenticate_job' => [
-        [
-            'job' => env('AFTER_AUTHENTICATE_JOB', \App\Jobs\AfterAuthenticateJob::class), // set: \App\Jobs\AfterAuthenticateJob::class
-            'inline' => env('AFTER_AUTHENTICATE_JOB_INLINE', false) // False = dispatch job for later
-        ],
         /*
-            [
-                'job' => env('AFTER_AUTHENTICATE_JOB'), // example: \App\Jobs\AfterAuthorizeJob::class
-                'inline' => env('AFTER_AUTHENTICATE_JOB_INLINE', false) // False = dispatch job for later, true = dispatch immediately
-            ],
+       [
+           'job' => env('AFTER_AUTHENTICATE_JOB', \App\Jobs\AfterAuthenticateJob::class), // set: \App\Jobs\AfterAuthenticateJob::class
+           'inline' => env('AFTER_AUTHENTICATE_JOB_INLINE', false) // False = dispatch job for later
+       ],
         */
+       /*
+           [
+               'job' => env('AFTER_AUTHENTICATE_JOB'), // example: \App\Jobs\AfterAuthorizeJob::class
+               'inline' => env('AFTER_AUTHENTICATE_JOB_INLINE', false) // False = dispatch job for later, true = dispatch immediately
+           ],
+       */
     ],
 
     /*

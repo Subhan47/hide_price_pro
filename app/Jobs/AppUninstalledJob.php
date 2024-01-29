@@ -24,6 +24,11 @@ class AppUninstalledJob extends \Osiset\ShopifyApp\Messaging\Jobs\AppUninstalled
             'result' =>  $this->data,
         ]);
 
+        $data = $this->data;
+        dispatch(new SendUninstallEmail([
+            'name' => $data->name,
+            'email' => $data->email,
+        ]));
 
         return $result;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendWelcomeEmail;
 use App\Models\Rule;
 use App\Models\RulesVariants;
 use App\Traits\ValidateRequestTrait;
@@ -24,6 +25,19 @@ class RuleController extends Controller
      */
     public function index()
     {
+        $shop = Auth::user();
+        $shopifyApi = $shop->api()->rest('GET', '/admin/shop.json');
+        $name = $shopifyApi['body']['shop']['name'];
+        $email = $shopifyApi['body']['shop']['email'];
+
+        if ((isset($shop->plan) || $shop->isFreemium() || $shop->isGrandfathered()) && !$shop->email_sent) {
+            dispatch(new SendWelcomeEmail([
+                'name' => $name, 'email' => $email
+            ]));
+
+            $shop->update(['email_sent' => true]);
+        }
+
         $rules = Rule::with('variants')->orderByDesc('id')->get();
 
         $shop = Auth::user()->api()->rest('GET', '/admin/api/2023-10/custom_collections.json');

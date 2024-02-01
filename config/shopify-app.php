@@ -343,7 +343,7 @@ return [
     'webhooks' => [
         [
             'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'APP_UNINSTALLED'),
-            'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://long-hands-suffer.loca.lt/webhook/app-uninstalled')
+            'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://hidepricepro.test/webhook/app-uninstalled')
         ],
         /*
             [

@@ -13,16 +13,14 @@ variantRadioButtons.forEach(radio => {
 async function processData() {
     $('#price-template--21887848022314__main').css('display', 'block');
 
-    var retrievedCollectionsRulesVariants = await fetchRulesVariants('collections');
-    $.each(retrievedCollectionsRulesVariants, function (index, item) {
-        predictiveSearchApi(item,'collections');
-    });
-
-    var retrievedProductsRulesVariants = await fetchRulesVariants('products');
-    $.each(retrievedProductsRulesVariants, function (index, item) {
-        predictiveSearchApi(item, 'products');
-    });
-
+    const types = ['collections'];
+    // const types = ['collections', 'products'];
+    for (const type of types) {
+        var retrievedRulesVariants = await fetchRulesVariants(type);
+        $.each(retrievedRulesVariants, function (index, item) {
+            predictiveSearchApi(item, type);
+        });
+    }
     const variantId = await getVariantID();
     if (variantId){
         checkVariantIDinDB(variantId);
@@ -64,22 +62,8 @@ function predictiveSearchApi(item, type){
                 if(type === 'collections'){
                     const collectionHandle = response.resources.results.collections[0]?.handle;
                     if(collectionHandle){
-                        $.ajax({
-                            url: `${window.Shopify.routes.root}collections/${collectionHandle}/products.json`,
-                            type: 'GET',
-                            dataType: 'json',
-                            crossDomain: true,
-                            contentType: "json",
-                            success: async function (response) {
-                                products = response.products;
-                                resolve(products);
-                            },
-                            error: function (error) {
-                                console.log('In error');
-                                console.log(error);
-                                reject(error);
-                            }
-                        });
+                        products = await getCollectionProducts(collectionHandle);
+                        resolve(products);
                     }
                 }
                 else{
@@ -128,6 +112,37 @@ function getVariantIDWithDelay() {
             resolve(variantID);
         }, 100);
     });
+}
+
+
+function getCollectionProducts(collectionHandle, page = 1, collectionProducts = []) {
+    return new Promise((resolve,reject) => {
+        const limit = 250;
+        $.ajax({
+            url: `${window.Shopify.routes.root}collections/${collectionHandle}/products.json?limit=${limit}&page=${page}`,
+            type: 'GET',
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "json",
+            success: async function (response) {
+                const products = response.products;
+                collectionProducts = collectionProducts.concat(products);
+                if (products.length === limit) {
+                    var recursiveProducts = await getCollectionProducts(collectionHandle, page + 1, collectionProducts);
+                    resolve(recursiveProducts);
+                }
+
+                if(products.length < limit) {
+                    resolve(collectionProducts);
+                }
+            },
+            error: function (error) {
+                reject(error);
+            }
+        });
+
+    });
+
 }
 
 function checkVariantIDinDB(variantID) {

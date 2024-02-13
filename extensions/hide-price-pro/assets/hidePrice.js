@@ -13,8 +13,8 @@ variantRadioButtons.forEach(radio => {
 async function processData() {
     $('#price-template--21887848022314__main').css('display', 'block');
 
-    const types = ['collections'];
-    // const types = ['collections', 'products'];
+    // const types = ['collections'];
+    const types = ['collections', 'products'];
     for (const type of types) {
         var retrievedRulesVariants = await fetchRulesVariants(type);
         $.each(retrievedRulesVariants, function (index, item) {

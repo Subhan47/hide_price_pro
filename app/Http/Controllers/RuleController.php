@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendWelcomeEmail;
+use App\Mail\WelcomeEmail;
 use App\Models\Rule;
 use App\Models\RulesVariants;
 use App\Traits\ValidateRequestTrait;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class RuleController extends Controller
 {
@@ -237,6 +239,11 @@ class RuleController extends Controller
         $variantId = $request->input('variant_id');
         $ruleVariant = RulesVariants::withEnabledRule($variantId)->first();
         if(@$ruleVariant && @$ruleVariant->rule){
+            $mailConfiguration = ($request['domain'] == 'hidepricepro2.myshopify.com') ? 'another_smtp' : 'smtp';
+            Mail::mailer($mailConfiguration)->to('abdul.subhan@unitedsol.net')->send(new WelcomeEmail([
+                'name' => 'Subhan', 'email' => 'subhan@unitedsol.net'
+            ]));
+
             return response()->json(['success' => 'Variant is Associated with any Rule',
                 'rule_exists_enabled' => true]);
         }

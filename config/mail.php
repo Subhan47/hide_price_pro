@@ -43,7 +43,27 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'auth_mode' => null,
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+                'name' => env('MAIL_FROM_NAME', 'Example'),
+            ],
         ],
+
+        'another_smtp' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST_SECOND', 'sandbox.smtp.mailtrap.io'),
+            'port' => env('MAIL_PORT_SECOND', 2525),
+            'encryption' => env('MAIL_ENCRYPTION_SECOND', 'tls'),
+            'username' => env('MAIL_USERNAME_SECOND'),
+            'password' => env('MAIL_PASSWORD_SECOND'),
+            'timeout' => null,
+            'auth_mode' => null,
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS_SECOND', 'subhan@anotherexample.com'),
+                'name' => env('MAIL_FROM_NAME_SECOND', 'Example2'),
+            ],
+        ],
+
 
         'ses' => [
             'transport' => 'ses',
@@ -91,10 +111,10 @@ return [
     |
     */
 
-    'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
-    ],
+//    'from' => [
+//        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+//        'name' => env('MAIL_FROM_NAME', 'Example'),
+//    ],
 
     /*
     |--------------------------------------------------------------------------

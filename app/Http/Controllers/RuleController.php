@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendWelcomeEmail;
+use App\Mail\OtpEmail;
 use App\Mail\WelcomeEmail;
 use App\Models\Rule;
 use App\Models\RulesVariants;
@@ -239,11 +240,6 @@ class RuleController extends Controller
         $variantId = $request->input('variant_id');
         $ruleVariant = RulesVariants::withEnabledRule($variantId)->first();
         if(@$ruleVariant && @$ruleVariant->rule){
-            $mailConfiguration = ($request['domain'] == 'hidepricepro2.myshopify.com') ? 'another_smtp' : 'smtp';
-            Mail::mailer($mailConfiguration)->to('abdul.subhan@unitedsol.net')->send(new WelcomeEmail([
-                'name' => 'Subhan', 'email' => 'subhan@unitedsol.net'
-            ]));
-
             return response()->json(['success' => 'Variant is Associated with any Rule',
                 'rule_exists_enabled' => true]);
         }

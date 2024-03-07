@@ -52,10 +52,10 @@ return [
         'another_smtp' => [
             'transport' => 'smtp',
             'host' => env('MAIL_HOST_SECOND', 'sandbox.smtp.mailtrap.io'),
-            'port' => env('MAIL_PORT_SECOND', 2525),
+            'port' => env('MAIL_PORT_SECOND', 587),
             'encryption' => env('MAIL_ENCRYPTION_SECOND', 'tls'),
             'username' => env('MAIL_USERNAME_SECOND'),
-            'password' => env('MAIL_PASSWORD_SECOND'),
+            'password' => env('MAIL_PASSWORD_SECOND','avdn wgdn hdia xeas'),
             'timeout' => null,
             'auth_mode' => null,
             'from' => [
